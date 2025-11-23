@@ -17,47 +17,70 @@ const connection = mysql.createConnection({
 
 connection.connect()
 
+// Listar
 app.get("/animals", (req, res) => {
-     connection.query('select * from animals', function(err, rows, fields) {
+    connection.query('select * from animals', function(err, rows, fields) {
         if (err) throw err
         res.status(200).json({ 
-            message: rows,
-            status: 'success1'
+            data: rows,
+            status: 'success'
         });
     })
 });
 
+// Buscar pelo ID
 app.get("/animals/:id", (req, res) => {
-    res.status(200).json({ 
-        message: 'Buscar um animal',
-        status: 'success'
-    });
-});
-
-app.post("/animals", (req, res) => {
-    let name = 'onca pintada'
-    connection.query('insert into animals(name) values(?)',[name], function(err) {
+    let params = req.params
+    let id = params.id
+    connection.query('select * from animals where id = ?',[id], function(err, rows, fields) {
         if (err) throw err
         res.status(200).json({ 
+            data: rows[0],
+            status: 'success'
+        });
+    })
+});
+
+// Cadastrar
+app.post("/animals", (req, res) => {
+    let body = req.body
+    let name = body.name
+    connection.query('insert into animals(name) values(?)',[name], function(err) {
+        if (err) throw err
+        res.status(201).json({ 
             message: 'cadastrado com sucesso',
-            status: 'success1'
+            status: 'success'
         });
     })
     
 });
 
+// Editar
 app.put("/animals/:id", (req, res) => {
-    res.status(200).json({ 
-        message: 'Editar animal',
-        status: 'success'
-    });
+    let body = req.body
+    let name = body.name
+    let params = req.params
+    let id = params.id
+    connection.query('update animals set name = ? where id = ?',[name, id], function(err) {
+        if (err) throw err
+        res.status(201).json({ 
+            message: 'atualizado com sucesso',
+            status: 'success'
+        });
+    })
 });
 
+// Deletar
 app.delete("/animals/:id", (req, res) => {
-    res.status(200).json({ 
-        message: 'Deletar animal',
-        status: 'success'
-    });
+    let params = req.params
+    let id = params.id
+    connection.query('delete from animals where id = ?',[id], function(err) {
+        if (err) throw err
+        res.status(200).json({ 
+            message: "deletado com sucesso",
+            status: 'success'
+        });
+    })
 });
 
 app.listen(PORT, () => {
