@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
+const Animal = require('./models/Animal');
 const app = express();
 const PORT = 3000;
 
@@ -21,8 +22,15 @@ connection.connect()
 app.get("/animals", (req, res) => {
     connection.query('select * from animals', function(err, rows, fields) {
         if (err) throw err
+        let animals = []
+        rows.forEach(function(row){
+            let animal = new Animal()
+            animal.id = row.id
+            animal.name = row.name
+            animals.push(animal)
+        })
         res.status(200).json({ 
-            data: rows,
+            data: animals,
             status: 'success'
         });
     })
@@ -34,8 +42,18 @@ app.get("/animals/:id", (req, res) => {
     let id = params.id
     connection.query('select * from animals where id = ?',[id], function(err, rows, fields) {
         if (err) throw err
+        if (rows.length <1){
+             res.status(404).json({ 
+                message: "animal não encontrado",
+                status: 'fail'
+            });
+            return
+        }
+        let animal = new Animal()
+        animal.id = rows[0].id
+        animal.name = rows[0].name
         res.status(200).json({ 
-            data: rows[0],
+            data: animal,
             status: 'success'
         });
     })
@@ -44,8 +62,9 @@ app.get("/animals/:id", (req, res) => {
 // Cadastrar
 app.post("/animals", (req, res) => {
     let body = req.body
-    let name = body.name
-    connection.query('insert into animals(name) values(?)',[name], function(err) {
+    let animal = new Animal()
+    animal.name = body.name
+    connection.query('insert into animals(name) values(?)',[animal.name], function(err) {
         if (err) throw err
         res.status(201).json({ 
             message: 'cadastrado com sucesso',
@@ -58,16 +77,28 @@ app.post("/animals", (req, res) => {
 // Editar
 app.put("/animals/:id", (req, res) => {
     let body = req.body
-    let name = body.name
+    let animal = new Animal()
+    animal.name = body.name
     let params = req.params
-    let id = params.id
-    connection.query('update animals set name = ? where id = ?',[name, id], function(err) {
+    animal.id = params.id
+    connection.query('select * from animals where id = ?',[animal.id], function(err, rows, fields) {
         if (err) throw err
-        res.status(201).json({ 
-            message: 'atualizado com sucesso',
-            status: 'success'
-        });
+        if (rows.length <1){
+             res.status(404).json({ 
+                message: "animal não encontrado",
+                status: 'fail'
+            });
+            return
+        }
+        connection.query('update animals set name = ? where id = ?',[animal.name, animal.id], function(err) {
+            if (err) throw err
+            res.status(200).json({ 
+                message: 'atualizado com sucesso',
+                status: 'success'
+            });
+        })
     })
+   
 });
 
 // Deletar
