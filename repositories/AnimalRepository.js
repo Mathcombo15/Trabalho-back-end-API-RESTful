@@ -1,38 +1,58 @@
 const Animal = require('../models/Animal');
-const connection = mysql.createConnection({
-  host: 'localhost',
-  port: 3306,
-  user: 'usuario_app',
-  password: 'senha_forte_123',
-  database: 'db_animals'
-})
-
-connection.connect()
 class AnimalRepository {
 
+    constructor(connection) {
+        this.conn = connection
+    }
     async findAll() {
-        const [rows] = await connection.promise().query('select * from animals')
-        let animals = []
+        const [rows] = await this.conn.promise().query('select * from animals');
+        const animals = [];
         rows.forEach(function(row){
-                let animal = new Animal()
-                animal.id = row.id
-                animal.name = row.name
-                animals.push(animal)
-            })
-        return animals
+            const animal = new Animal();
+            animal.id = row.id;
+            animal.name = row.name;
+            animals.push(animal);
+        });
+        return animals;
     }
 
-    findByID(id) {
-
+    async findByID(id) {
+        const [rows] = await this.conn
+            .promise()
+            .query('select * from animals where id = ?', [id]);
+        if (rows.length < 1) {
+            return null;
+        }
+        const row = rows[0];
+        const animal = new Animal();
+        animal.id = row.id;
+        animal.name = row.name;
+        return animal;
     }
-    save(body){
 
+    async save(body) {
+        const animal = new Animal();
+        animal.name = body.name;
+        const [result] = await this.conn
+            .promise()
+            .query('insert into animals(name) values(?)', [animal.name]);
+        animal.id = result.insertId;
+        return animal;
     }
-    update(id,body){
 
+    async update(body) {
+        const [result] = await this.conn
+            .promise()
+            .query('update animals set name = ? where id = ?', [body.name, body.id]);
+        return result.affectedRows;
     }
-    delete(id){
 
+    async delete(id) {
+        const [result] = await this.conn
+            .promise()
+            .query('delete from animals where id = ?', [id]);
+
+        return result.affectedRows;
     }
 }
 

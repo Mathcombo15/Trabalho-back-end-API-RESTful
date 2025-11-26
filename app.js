@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
 const Animal = require('./models/Animal');
+const AnimalRepository = require('./repositories/AnimalRepository');
 const app = express();
 const PORT = 3000;
 
@@ -17,102 +18,112 @@ const connection = mysql.createConnection({
 })
 
 connection.connect()
+const animalRepository = new AnimalRepository(connection);
 
-// Listar
-app.get("/animals", (req, res) => {
-    connection.query('select * from animals', function(err, rows, fields) {
-        if (err) throw err
-        let animals = []
-        rows.forEach(function(row){
+
+app.get("/animals", async (req, res) => {
+        try {
+            const animals = await animalRepository.findAll();
+            res.status(200).json({
+                data: animals,
+                status: 'success'
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: 'erro ao listar animais',
+                status: 'error'
+            });
+        }
+    });
+
+    app.get("/animals/:id", async (req, res) => {
+        try {
+            const { id } = req.params;
+            const animal = await animalRepository.findByID(id);
+            if (!animal) {
+                res.status(404).json({
+                    message: "animal não encontrado",
+                    status: 'fail'
+                });
+                return;
+            }
+            res.status(200).json({
+                data: animal,
+                status: 'success'
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: 'erro ao buscar animal',
+                status: 'error'
+            });
+        }
+    });
+
+    app.post("/animals", async (req, res) => {
+        try {
+            let body = req.body
             let animal = new Animal()
-            animal.id = row.id
-            animal.name = row.name
-            animals.push(animal)
-        })
-        res.status(200).json({ 
-            data: animals,
-            status: 'success'
-        });
-    })
-});
-
-// Buscar pelo ID
-app.get("/animals/:id", (req, res) => {
-    let params = req.params
-    let id = params.id
-    connection.query('select * from animals where id = ?',[id], function(err, rows, fields) {
-        if (err) throw err
-        if (rows.length <1){
-             res.status(404).json({ 
-                message: "animal não encontrado",
-                status: 'fail'
+            animal.name = body.name
+            await animalRepository.save(animal);
+            res.status(201).json({
+                message: 'cadastrado com sucesso',
+                status: 'success'
             });
-            return
-        }
-        let animal = new Animal()
-        animal.id = rows[0].id
-        animal.name = rows[0].name
-        res.status(200).json({ 
-            data: animal,
-            status: 'success'
-        });
-    })
-});
-
-// Cadastrar
-app.post("/animals", (req, res) => {
-    let body = req.body
-    let animal = new Animal()
-    animal.name = body.name
-    connection.query('insert into animals(name) values(?)',[animal.name], function(err) {
-        if (err) throw err
-        res.status(201).json({ 
-            message: 'cadastrado com sucesso',
-            status: 'success'
-        });
-    })
-    
-});
-
-// Editar
-app.put("/animals/:id", (req, res) => {
-    let body = req.body
-    let animal = new Animal()
-    animal.name = body.name
-    let params = req.params
-    animal.id = params.id
-    connection.query('select * from animals where id = ?',[animal.id], function(err, rows, fields) {
-        if (err) throw err
-        if (rows.length <1){
-             res.status(404).json({ 
-                message: "animal não encontrado",
-                status: 'fail'
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: 'erro ao cadastrar animal',
+                status: 'error'
             });
-            return
         }
-        connection.query('update animals set name = ? where id = ?',[animal.name, animal.id], function(err) {
-            if (err) throw err
-            res.status(200).json({ 
+    });
+
+    app.put("/animals/:id", async (req, res) => {
+        try {
+            let body = req.body
+            let animal = new Animal()
+            animal.name = body.name
+            let params = req.params
+            animal.id = params.id
+            const affected = await animalRepository.update(animal);
+            if (affected === 0) {
+                res.status(404).json({
+                    message: "animal não encontrado",
+                    status: 'fail'
+                });
+                return;
+            }
+            res.status(200).json({
                 message: 'atualizado com sucesso',
                 status: 'success'
             });
-        })
-    })
-   
-});
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: 'erro ao atualizar animal',
+                status: 'error'
+            });
+        }
+    });
 
-// Deletar
-app.delete("/animals/:id", (req, res) => {
-    let params = req.params
-    let id = params.id
-    connection.query('delete from animals where id = ?',[id], function(err) {
-        if (err) throw err
-        res.status(200).json({ 
-            message: "deletado com sucesso",
-            status: 'success'
-        });
-    })
-});
+    app.delete("/animals/:id", async (req, res) => {
+        try {
+            const { id } = req.params;
+            await animalRepository.delete(id);
+            res.status(200).json({
+                message: "deletado com sucesso",
+                status: 'success'
+            });
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({
+                message: 'erro ao deletar animal',
+                status: 'error'
+            });
+        }
+    });
 
 app.listen(PORT, () => {
     console.log(`Servidor escutando na porta ${PORT}`);
