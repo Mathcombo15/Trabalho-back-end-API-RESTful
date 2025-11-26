@@ -1,21 +1,67 @@
 module.exports = function (app) {
 
     const mysql = require('mysql2');
+    const jwt = require('jsonwebtoken');
+    const bcrypt = require('bcrypt');
     const Animal = require('./models/Animal');
     const AnimalRepository = require('./repositories/AnimalRepository');
+    const authMiddleware = require('./middlewares/auth');
     const connection = mysql.createConnection({
-        host: 'localhost',
-        port: 3306,
-        user: 'usuario_app',
-        password: 'senha_forte_123',
-        database: 'db_animals'
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME
     })
 
     connection.connect()
 
     const animalRepository = new AnimalRepository(connection);
 
-    
+    app.post('/login', async (req, res) => {
+        const { name, password } = req.body;
+        connection.query('select * from users where name = ?',[name], function(err, rows, fields) {
+            if (err) throw err
+            if (rows.length <1){
+                res.status(404).json({ 
+                    message: "Credenciais inválidas1",
+                    status: 'fail'
+                });
+                return
+            }
+            row = rows[0]
+            try {
+                const passwordOk = bcrypt.compare(password, row.password);
+                if (!passwordOk) {
+                    return res.status(401).json({
+                        message: 'Credenciais inválidas2',
+                        status: 'fail'
+                    });
+                }
+                const payload = { id: row.id, name: row.name };
+
+                const token = jwt.sign(
+                    payload,
+                    process.env.JWT_SECRET,
+                    { expiresIn: process.env.JWT_EXPIRES_IN || '1h' }
+                );
+
+                return res.status(200).json({
+                    token,
+                    status: 'success'
+                });
+            } catch (err) {
+                console.error(err);
+                return res.status(500).json({
+                    message: 'erro ao autenticar',
+                    status: 'error'
+                });
+            }
+        })
+
+       
+    });
+
     app.get("/animals", async (req, res) => {
         try {
             const animals = await animalRepository.findAll();
@@ -56,7 +102,7 @@ module.exports = function (app) {
         }
     });
 
-    app.post("/animals", async (req, res) => {
+    app.post("/animals", authMiddleware, async (req, res) => {
         try {
             let body = req.body
             let animal = new Animal()
@@ -75,14 +121,14 @@ module.exports = function (app) {
         }
     });
 
-    app.put("/animals/:id", async (req, res) => {
+    app.put("/animals/:id", authMiddleware, async (req, res) => {
         try {
             let body = req.body
             let animal = new Animal()
             animal.name = body.name
             let params = req.params
             animal.id = params.id
-            const affected = await animalRepository.update(id, animal);
+            const affected = await animalRepository.update(animal);
             if (affected === 0) {
                 res.status(404).json({
                     message: "animal não encontrado",
@@ -103,7 +149,7 @@ module.exports = function (app) {
         }
     });
 
-    app.delete("/animals/:id", async (req, res) => {
+    app.delete("/animals/:id", authMiddleware, async (req, res) => {
         try {
             const { id } = req.params;
             await animalRepository.delete(id);
