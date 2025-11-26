@@ -15,5 +15,29 @@ services:
       - "3306:3306" 
     volumes:
       - ./initdb/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    
+  app: 
+    build: .
+    ports: 
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: usuario_app
+      DB_PASSWORD: senha_forte_123
+      DB_NAME: db_animals
+      JWT_SECRET: minha_secreta_muito_grande_e_dificil
+      JWT_EXPIRES_IN: 1h
+    restart: always
+    depends_on:
+      - db:
+          condition: service_healthy
 # volumes:
 #   mysql_data:

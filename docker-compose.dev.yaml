@@ -1,0 +1,18 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: meu-mysql-local
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_secreta
+
+      MYSQL_DATABASE: db_animals
+
+      MYSQL_USER: usuario_app
+      MYSQL_PASSWORD: senha_forte_123
+
+    ports: 
+      - "3306:3306"
+    volumes: 
+      - ./initdb/init.sql:/docker-entrypoint-initdb.d/init.sql
+
