@@ -36,12 +36,8 @@ Clique em Authorize novamente.
 
 ✅ Pronto! Agora você terá permissão para testar todos os endpoints da API.
 
-## 👥 Autores
-
-| [<img src="https://github.com/LetMellod.png" width=115><br><sub>Nome do Aluno 1</sub>](https://github.com/LetMellod) |  [<img src="https://github.com/Mathcombo15.png" width=115><br><sub>Nome do Aluno 2</sub>](https://github.com/Mathcombo15) |
-| :---: | :---: |
 
 ## 👨‍💻 Desenvolvedores
 
-* **Letícia Melo** - *Back-end* - [GitHub](https://github.com/LetMellod)
-* **Matheus Santos** - *Back-end* - [GitHub](https://github.com/Mathcombo15)
+* **Letícia Melo** - *2324291012* 
+* **Matheus Santos** - *2324291037*
