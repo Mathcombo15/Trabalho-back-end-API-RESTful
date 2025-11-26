@@ -9,12 +9,12 @@ Para subir o projeto e todas as suas dependências, execute o comando abaixo na 
 ```bash
 docker-compose up --build
 
-📖 Documentação (Swagger UI)
+### 📖 Documentação (Swagger UI)
 Após iniciar o container, a documentação interativa da API estará disponível. Utilize-a para testar as requisições.
 
 URL: http://localhost:3000/docs
 
-🔐 Autenticação e Segurança
+### 🔐 Autenticação e Segurança
 Os endpoints que utilizam os métodos POST, PUT e DELETE são protegidos e requerem um token de autenticação para serem acessados.
 
 1. Obter Token (Login)
@@ -35,3 +35,8 @@ Insira o token (geralmente precedido por Bearer se necessário, ou apenas o toke
 Clique em Authorize novamente.
 
 ✅ Pronto! Agora você terá permissão para testar todos os endpoints da API.
+
+## 👥 Autores
+
+| [<img src="https://github.com/LetMellod.png" width=115><br><sub>Nome do Aluno 1</sub>](https://github.com/LetMellod) |  [<img src="https://github.com/Mathcombo15.png" width=115><br><sub>Nome do Aluno 2</sub>](https://github.com/Mathcombo15) |
+| :---: | :---: |
