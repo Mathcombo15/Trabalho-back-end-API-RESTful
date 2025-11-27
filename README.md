@@ -4,6 +4,8 @@ Este projeto consiste em uma API RESTful containerizada com Docker, documentada 
 
 ## 🚀 Como Executar
 
+* **Antes de iniciar a execução, navegue até a branch 'develop'.**
+
 Para subir o projeto e todas as suas dependências, execute o comando abaixo na raiz do diretório:
 
 ```bash
@@ -35,7 +37,7 @@ Insira o token (geralmente precedido por Bearer se necessário, ou apenas o toke
 Clique em Authorize novamente.
 
 ✅ Pronto! Agora você terá permissão para testar todos os endpoints da API.
-
+```
 
 ## 👨‍💻 Desenvolvedores
 
