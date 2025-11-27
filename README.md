@@ -10,6 +10,7 @@ Para subir o projeto e todas as suas dependências, execute o comando abaixo na 
 
 ```bash
 docker-compose up --build
+```
 
 * **📖 Documentação (Swagger UI)**
 Após iniciar o container, a documentação interativa da API estará disponível. Utilize-a para testar as requisições.
@@ -37,7 +38,7 @@ Insira o token (geralmente precedido por Bearer se necessário, ou apenas o toke
 Clique em Authorize novamente.
 
 ✅ Pronto! Agora você terá permissão para testar todos os endpoints da API.
-```
+
 
 ## 👨‍💻 Desenvolvedores
 
